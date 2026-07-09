@@ -1,0 +1,36 @@
+{
+    "last_updated": "2026-07-09 14:56:12",
+    "global_fear_greed": 42,
+    "usa": {
+        "trend": 7.57,
+        "macd": "Steigt flach",
+        "yield_curve": 0.35,
+        "vix": 16.65,
+        "credit_spread": 2.67,
+        "rsi": 54
+    },
+    "eu": {
+        "trend": 6.51,
+        "macd": "F\u00e4llt stark",
+        "yield_curve": 1.19,
+        "vix": 11.42,
+        "credit_spread": 2.58,
+        "rsi": 53
+    },
+    "japan": {
+        "trend": 22.17,
+        "macd": "F\u00e4llt stark",
+        "yield_curve": 1.41,
+        "vix": 36.1,
+        "credit_spread": null,
+        "rsi": 49
+    },
+    "em": {
+        "trend": 20.36,
+        "macd": "F\u00e4llt stark",
+        "dxy_trend": 2.09,
+        "vix": 39.04,
+        "credit_spread": 1.43,
+        "rsi": 47
+    }
+}

@@ -1,0 +1,5 @@
+requests
+yfinance
+pandas
+fear_greed
+cloudscraper
