@@ -19,21 +19,17 @@
     <style>
         body { font-family: 'Urbanist', sans-serif; background-color: #0a0a0a; color: #f5f5f5; }
         .score-circle { width: 140px; height: 140px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px solid #1a1a1a; transition: all 0.5s ease; }
-        
-        /* Neue, erweiterte Farbskala für die runden Haupt-Ampeln */
         .score-circle.dark-green { background-color: #00b300; box-shadow: 0 0 50px rgba(0, 179, 0, 0.4); color: #fff; }
         .score-circle.light-green { background-color: #5cd65c; box-shadow: 0 0 40px rgba(92, 214, 92, 0.3); color: #0a0a0a; }
         .score-circle.yellow { background-color: #ffcc00; box-shadow: 0 0 40px rgba(255, 204, 0, 0.3); color: #1a1a1a; }
         .score-circle.orange { background-color: #ff9900; box-shadow: 0 0 40px rgba(255, 153, 0, 0.3); color: #0a0a0a; }
         .score-circle.red { background-color: #ff4d4d; box-shadow: 0 0 50px rgba(255, 77, 77, 0.4); color: #0a0a0a; }
         .score-circle.gray { background-color: #333; color: #888; }
-        
         .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; }
         .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen flex flex-col items-center">
-    
     <div id="root" class="w-full max-w-[1400px]"></div>
 
     <script type="text/babel">
@@ -69,6 +65,15 @@
             if (val < 70) return 3;
             return 1;
         };
+        
+        // NEU: Makro-Rohstoff-Logik
+        const getRealYieldScore = (val) => {
+            if (val < 0.5) return 10;
+            if (val < 1.0) return 8;
+            if (val <= 1.5) return 5;
+            if (val < 2.0) return 3;
+            return 1;
+        };
         const getInflationScore = (val) => {
             if (val > 2.5) return 10;
             if (val > 2.2) return 8;
@@ -77,13 +82,12 @@
             return 1;
         };
 
-        // --- FARB-LOGIK FÜR DAS GLOBALE BANNER ---
         const getGlobalFgColor = (val) => {
-            if (val < 25) return 'bg-[#00b300] text-white shadow-[0_0_20px_rgba(0,179,0,0.5)]'; // Starker Kauf
-            if (val < 45) return 'bg-[#5cd65c] text-black shadow-[0_0_15px_rgba(92,214,92,0.3)]'; // Kauf
-            if (val <= 55) return 'bg-[#ffcc00] text-black shadow-[0_0_15px_rgba(255,204,0,0.3)]'; // Neutral
-            if (val < 75) return 'bg-[#ff9900] text-black shadow-[0_0_15px_rgba(255,153,0,0.3)]'; // Warnung
-            return 'bg-[#ff4d4d] text-black shadow-[0_0_20px_rgba(255,77,77,0.5)]'; // Starker Verkauf
+            if (val < 25) return 'bg-[#00b300] text-white shadow-[0_0_20px_rgba(0,179,0,0.5)]'; 
+            if (val < 45) return 'bg-[#5cd65c] text-black shadow-[0_0_15px_rgba(92,214,92,0.3)]';
+            if (val <= 55) return 'bg-[#ffcc00] text-black shadow-[0_0_15px_rgba(255,204,0,0.3)]';
+            if (val < 75) return 'bg-[#ff9900] text-black shadow-[0_0_15px_rgba(255,153,0,0.3)]';
+            return 'bg-[#ff4d4d] text-black shadow-[0_0_20px_rgba(255,77,77,0.5)]';
         };
         const getGlobalFgText = (val) => {
             if (val < 25) return 'text-[#00b300]';
@@ -94,39 +98,18 @@
         };
         const getGlobalFgLabel = (val) => {
             if (val < 25) return 'Extreme Angst (Starker Kauf)';
-            if (val < 45) return 'Angst (Gutes Einstiegsumfeld)';
+            if (val < 45) return 'Angst (Gutes Umfeld)';
             if (val <= 55) return 'Neutral';
-            if (val < 75) return 'Gier (Erhöhtes Risiko)';
-            return 'Extreme Gier (Warnsignal)';
+            if (val < 75) return 'Gier (Gewinne sichern)';
+            return 'Extreme Gier (Verkaufssignal)';
         };
 
-        // --- NEUE 5-STUFIGE FARB-LOGIK FÜR DIE KACHELN ---
         const getTileColorClasses = (score) => {
-            if (score >= 9) return { 
-                border: 'border-t-4 border-t-[#00b300] border-[#2a2a2a]', 
-                iconBg: 'bg-[#00b300]/20 text-[#00b300]', 
-                badge: 'text-[#00b300] bg-[#00b300]/10' 
-            };
-            if (score >= 7) return { 
-                border: 'border-t-4 border-t-[#5cd65c] border-[#2a2a2a]', 
-                iconBg: 'bg-[#5cd65c]/20 text-[#5cd65c]', 
-                badge: 'text-[#5cd65c] bg-[#5cd65c]/10' 
-            };
-            if (score >= 5) return { 
-                border: 'border-t-4 border-t-[#ffcc00] border-[#2a2a2a]', 
-                iconBg: 'bg-[#ffcc00]/20 text-[#ffcc00]', 
-                badge: 'text-[#ffcc00] bg-[#ffcc00]/10' 
-            };
-            if (score >= 3) return { 
-                border: 'border-t-4 border-t-[#ff9900] border-[#2a2a2a]', 
-                iconBg: 'bg-[#ff9900]/20 text-[#ff9900]', 
-                badge: 'text-[#ff9900] bg-[#ff9900]/10' 
-            };
-            return { 
-                border: 'border-t-4 border-t-[#ff4d4d] border-[#2a2a2a]', 
-                iconBg: 'bg-[#ff4d4d]/20 text-[#ff4d4d]', 
-                badge: 'text-[#ff4d4d] bg-[#ff4d4d]/10' 
-            };
+            if (score >= 9) return { border: 'border-t-4 border-t-[#00b300] border-[#2a2a2a]', iconBg: 'bg-[#00b300]/20 text-[#00b300]', badge: 'text-[#00b300] bg-[#00b300]/10' };
+            if (score >= 7) return { border: 'border-t-4 border-t-[#5cd65c] border-[#2a2a2a]', iconBg: 'bg-[#5cd65c]/20 text-[#5cd65c]', badge: 'text-[#5cd65c] bg-[#5cd65c]/10' };
+            if (score >= 5) return { border: 'border-t-4 border-t-[#ffcc00] border-[#2a2a2a]', iconBg: 'bg-[#ffcc00]/20 text-[#ffcc00]', badge: 'text-[#ffcc00] bg-[#ffcc00]/10' };
+            if (score >= 3) return { border: 'border-t-4 border-t-[#ff9900] border-[#2a2a2a]', iconBg: 'bg-[#ff9900]/20 text-[#ff9900]', badge: 'text-[#ff9900] bg-[#ff9900]/10' };
+            return { border: 'border-t-4 border-t-[#ff4d4d] border-[#2a2a2a]', iconBg: 'bg-[#ff4d4d]/20 text-[#ff4d4d]', badge: 'text-[#ff4d4d] bg-[#ff4d4d]/10' };
         };
 
         const getIndicatorConfig = (id, value, region) => {
@@ -137,47 +120,49 @@
             switch(id) {
                 case 'trend':
                     score = getTrendScore(value); icon = 'fa-chart-pie'; title = 'Bewertung (SMA)'; unit = '%';
-                    desc = 'Abstand zur 200-Tage-Linie. Antizyklisch bewertet.';
+                    desc = 'Abstand zur 200-Tage-Linie. Antizyklisch: Weit darunter (günstig), weit darüber (überhitzt).';
                     break;
                 case 'macd':
                     score = getMacdScore(value); icon = 'fa-arrow-trend-up'; title = 'Momentum (MACD)'; unit = '';
-                    desc = 'Trendstärke & Timing. Bewertet Kreuzungen und die Steigung.';
+                    desc = 'Trendstärke & Timing. Bewertet Kreuzungen und die Steigung der Trendwende.';
                     break;
                 case 'yield_curve':
                     score = getYieldCurveScore(value); icon = 'fa-chart-line'; title = 'Zinsstruktur'; unit = '%';
-                    desc = '10J minus 2J bzw. 3M. Invers (< 0) warnt vor Abschwung.';
+                    desc = '10J minus 2J bzw. 3M Zinsen. Invers (< 0) warnt vor Abschwung.';
                     break;
                 case 'dxy_trend':
                     score = getDxyScore(value); icon = 'fa-dollar-sign'; title = 'US-Dollar Trend'; unit = '%';
-                    desc = 'Ein schwacher Dollar beflügelt EM und Rohstoffe.';
+                    desc = 'Abstand zur 200-Tage-Linie. Schwacher Dollar beflügelt Schwellenländer und Rohstoffe.';
                     break;
                 case 'vix':
                     score = getVixScore(value); icon = 'fa-bolt'; title = 'Volatilität'; unit = ' Pkt';
-                    desc = 'Angstbarometer (VIX). Extreme Panik = Kaufchance.';
+                    desc = 'Angstbarometer (VIX). Antizyklisch: Extreme Panik (>35) = Kaufchance.';
                     break;
                 case 'credit_spread':
                     score = getCreditSpreadScore(value); icon = 'fa-building-columns'; title = 'Credit Spread'; unit = '%';
-                    desc = 'U-Form: Niedrig = Gut, Hoch = Schlecht, Panik = Kaufchance.';
+                    desc = 'Risikoaufschlag. U-Form: Niedrig = Gut, Hoch = Schlecht, Panik (>8%) = Kaufchance.';
                     break;
                 case 'rsi':
                     score = getRsiScore(value); icon = 'fa-scale-balanced'; title = 'Sentiment (RSI)'; unit = ' Pkt';
-                    desc = 'Relative Stärke. < 30 = Überverkauft, > 70 = Überkauft.';
+                    desc = 'Relative Strength Index. Antizyklisch: < 30 = Überverkauft, > 70 = Überkauft.';
                     break;
-                case 'gold_trend':
-                    score = getTrendScore(value); icon = 'fa-coins'; title = 'Gold (SMA 200)'; unit = '%';
-                    desc = 'Sicherer Hafen. Starker Trend zeigt fallende Realzinsen an.';
+                
+                // NEU: Profi-Rohstoff-Indikatoren
+                case 'real_interest_rate':
+                    score = getRealYieldScore(value); icon = 'fa-percent'; title = 'US Realzins (10J)'; unit = '%';
+                    desc = 'Nominalzins minus Inflation. Hohe Realzinsen (> 2%) sind pures Gift für Gold & Rohstoffe.';
                     break;
-                case 'copper_trend':
-                    score = getTrendScore(value); icon = 'fa-microchip'; title = 'Dr. Copper (SMA 200)'; unit = '%';
-                    desc = 'Konjunktur-Indikator. Kupfer hoch = wachsende Wirtschaft.';
+                case 'copper_gold_ratio':
+                    score = getTrendScore(value); icon = 'fa-balance-scale-right'; title = 'Copper/Gold Ratio'; unit = '%';
+                    desc = 'Konjunktur (Kupfer) vs. Angst (Gold). Antizyklisch: Starker Absturz = Rezession eingepreist (Kaufchance).';
                     break;
                 case 'oil_trend':
                     score = getTrendScore(value); icon = 'fa-oil-well'; title = 'WTI Öl (SMA 200)'; unit = '%';
-                    desc = 'Energie-Nachfrage. Treibt häufig die globale Inflation.';
+                    desc = 'Abstand zur 200-Tage-Linie. Überverkauftes Öl bietet oft gute antizyklische Chancen.';
                     break;
-                case 'inflation_breakeven':
-                    score = getInflationScore(value); icon = 'fa-arrow-up-right-dots'; title = 'Inflationserwartung'; unit = '%';
-                    desc = 'Erwartete Inflation (10J). Gut für Rohstoffe.';
+                case 'inflation_breakeven_5y':
+                    score = getInflationScore(value); icon = 'fa-arrow-up-right-dots'; title = 'Inflation (5 Jahre)'; unit = '%';
+                    desc = 'Mittelfristige Inflationserwartung. Steigende Raten treiben massiv Geld in Sachwerte.';
                     break;
                 default: return null;
             }
@@ -195,7 +180,6 @@
             }
             const displayScore = avgScore.toFixed(1);
             
-            // NEUE LOGIK FÜR DIE HAUPT-AMPELN
             let overallLight = 'gray', label = 'KEINE DATEN';
             if (avgScore >= 8.5) { overallLight = 'dark-green'; label = 'STARKER KAUF'; }
             else if (avgScore >= 6.5) { overallLight = 'light-green'; label = 'KAUF'; }
@@ -274,7 +258,8 @@
             };
 
             const standardKeys = ['trend', 'macd', 'yield_curve', 'dxy_trend', 'vix', 'credit_spread', 'rsi'];
-            const commodityKeys = ['gold_trend', 'copper_trend', 'oil_trend', 'inflation_breakeven', 'dxy_trend', 'macd', 'rsi'];
+            // NEUE Rohstoff-Keys passend zur Profi-Logik
+            const commodityKeys = ['real_interest_rate', 'copper_gold_ratio', 'oil_trend', 'inflation_breakeven_5y', 'dxy_trend', 'macd', 'rsi'];
 
             return (
                 <div className="w-full">
@@ -321,7 +306,6 @@
                                 </div>
                             </div>
                             
-                            {/* Regionale Dashboards */}
                             <RegionDashboard regionName="USA" data={dashboardData.usa} flagIcon="fa-flag-usa" indicatorKeys={standardKeys} />
                             <RegionDashboard regionName="Europa" data={dashboardData.eu} flagIcon="fa-earth-europe" indicatorKeys={standardKeys} />
                             <RegionDashboard regionName="Japan" data={dashboardData.japan} flagIcon="fa-torii-gate" indicatorKeys={standardKeys} />
