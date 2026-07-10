@@ -28,8 +28,8 @@ jobs:
 
       - name: Speichere neue JSON-Datei auf GitHub
         run: |
-      git config --global user.name "github-actions[bot]"
-      git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      git add dashboard_data.json
-      git commit -m "Automatisches Daten-Update" || exit 0
-      git push
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dashboard_data.json
+          git commit -m "Automatisches Daten-Update" || exit 0
+          git push
