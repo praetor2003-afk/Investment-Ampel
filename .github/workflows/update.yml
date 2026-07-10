@@ -1,5 +1,18 @@
-requests
-yfinance
-pandas
-fear_greed
-cloudscraper
+name: Automatisches Daten-Updateon:schedule:- cron: '0 6 * * *'workflow_dispatch:permissions:contents: writejobs:update-data:runs-on: ubuntu-lateststeps:- name: Lade Repository herunteruses: actions/checkout@v4  - name: Richte Python ein
+    uses: actions/setup-python@v5
+    with:
+      python-version: '3.10'
+
+  - name: Installiere Pakete
+    run: pip install -r requirements.txt
+
+  - name: Führe Daten-Sammler aus
+    run: python data_collector.py
+
+  - name: Speichere neue JSON-Datei auf GitHub
+    run: |
+      git config --global user.name "github-actions[bot]"
+      git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      git add dashboard_data.json
+      git commit -m "Automatisches Daten-Update" || exit 0
+      git push
