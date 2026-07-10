@@ -44,20 +44,34 @@ def get_trend_data(ticker_symbol):
     except Exception: 
         return None
 
+def get_copper_gold_ratio_trend():
+    """Berechnet den Trend der Copper-to-Gold Ratio (Kupfer / Gold)"""
+    try:
+        cop_hist = yf.Ticker('HG=F').history(period="1y")['Close']
+        gold_hist = yf.Ticker('GC=F').history(period="1y")['Close']
+        # Datenreihen abgleichen
+        df = pd.DataFrame({'Copper': cop_hist, 'Gold': gold_hist}).dropna()
+        if df.empty: return None
+        df['Ratio'] = df['Copper'] / df['Gold']
+        
+        current_ratio = df['Ratio'].iloc[-1]
+        sma_200_ratio = df['Ratio'].rolling(window=200).mean().iloc[-1]
+        return round(((current_ratio - sma_200_ratio) / sma_200_ratio) * 100, 2)
+    except Exception:
+        return None
+
 def get_macd_signal(ticker_symbol):
-    """Berechnet den MACD und generiert exakte textbasierte Signale für das Dashboard"""
+    """Berechnet den MACD und generiert textbasierte Signale"""
     try:
         hist = yf.Ticker(ticker_symbol).history(period="1y")
         if hist.empty: return None
         
-        # MACD Berechnung
         exp1 = hist['Close'].ewm(span=12, adjust=False).mean()
         exp2 = hist['Close'].ewm(span=26, adjust=False).mean()
         macd = exp1 - exp2
         signal = macd.ewm(span=9, adjust=False).mean()
         histogram = macd - signal
 
-        # Signal-Logik (Vergleich heute vs. gestern)
         m_today, m_yest = macd.iloc[-1], macd.iloc[-2]
         s_today, s_yest = signal.iloc[-1], signal.iloc[-2]
         h_today, h_yest = histogram.iloc[-1], histogram.iloc[-2]
@@ -73,19 +87,14 @@ def get_macd_signal(ticker_symbol):
         return None
 
 def get_vix_data(vix_ticker, index_fallback):
-    """
-    Holt den echten VIX. Falls Yahoo meckert (was bei EU und Japan oft passiert), 
-    fängt das Skript den Fehler ab und berechnet ihn mathematisch selbst.
-    """
+    """Holt den VIX oder berechnet synthetische Vola bei Blockaden."""
     try:
         hist = yf.Ticker(vix_ticker).history(period="1mo")
         if not hist.empty and not hist['Close'].isna().all():
             return round(hist['Close'].dropna().iloc[-1], 2)
     except Exception:
         pass
-        
     try:
-        # Fallback: Realisierte Vola
         hist = yf.Ticker(index_fallback).history(period="3mo")
         if hist.empty: return None
         hist['Returns'] = hist['Close'].pct_change()
@@ -95,16 +104,12 @@ def get_vix_data(vix_ticker, index_fallback):
         return None
 
 def get_rsi(ticker_symbol, periods=14):
-    """
-    Berechnet den Relative Strength Index (RSI). 
-    Skala: 0 (Extreme Fear/Überverkauft) bis 100 (Extreme Greed/Überkauft).
-    """
+    """Berechnet den Relative Strength Index (RSI)."""
     try:
         hist = yf.Ticker(ticker_symbol).history(period="6mo")
         if hist.empty: return None
         
         close_delta = hist['Close'].diff()
-        
         up = close_delta.clip(lower=0)
         down = -1 * close_delta.clip(upper=0)
         
@@ -113,22 +118,17 @@ def get_rsi(ticker_symbol, periods=14):
         
         rs = ma_up / ma_down
         rsi = 100 - (100 / (1 + rs))
-        
         return int(round(rsi.iloc[-1]))
     except Exception:
         return None
 
 def get_us_fear_and_greed():
-    """
-    Level 2 Panzer-Modus: Nutzt Cloudscraper, um sich als echter Browser 
-    auszugeben und die CNN Firewall zu umgehen.
-    """
-    # Methode 1: Cloudscraper (Tarnkappen-Browser)
+    """Nutzt Cloudscraper für CNN Firewall."""
     try:
         scraper = cloudscraper.create_scraper()
         url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
             "Accept": "application/json",
             "Referer": "https://edition.cnn.com/markets/fear-and-greed"
         }
@@ -139,22 +139,16 @@ def get_us_fear_and_greed():
     except Exception:
         pass
 
-    # Methode 2: Fallback auf das fear_greed Paket
     try:
         fg = fear_greed.get()
         if isinstance(fg, dict):
             if 'fear_and_greed' in fg and 'score' in fg['fear_and_greed']:
                 return round(float(fg['fear_and_greed']['score']))
             val = fg.get('score', fg.get('value'))
-            if val is not None:
-                return round(float(val))
-        elif hasattr(fg, 'score'):
-            return round(float(fg.score))
-        elif hasattr(fg, 'value'):
-            return round(float(fg.value))
-    except Exception as e:
-        print(f"  -> Fehler beim Abruf des Fear & Greed Index: {e}")
-        
+            if val is not None: return round(float(val))
+        elif hasattr(fg, 'score'): return round(float(fg.score))
+        elif hasattr(fg, 'value'): return round(float(fg.value))
+    except Exception: pass
     return None
 
 # ==============================================================================
@@ -162,9 +156,8 @@ def get_us_fear_and_greed():
 # ==============================================================================
 
 def update_dashboard_data():
-    print("Starte globalen Datenabruf (4 Regionen)...")
+    print("Starte globalen Datenabruf (inkl. Profi-Rohstoff-Logik)...")
     
-    # Globales Klima (CNN F&G)
     global_fg = get_us_fear_and_greed()
     
     # 1. USA
@@ -191,7 +184,7 @@ def update_dashboard_data():
         "rsi": get_rsi('^STOXX') 
     }
 
-    # 3. JAPAN (Sonderfall Developed Market)
+    # 3. JAPAN
     print("-> Lade Japan...")
     jp_10y = get_fred_data('IRLTLT01JPM156N', FRED_API_KEY)
     jp_3m = get_fred_data('IR3TIB01JPM156N', FRED_API_KEY)
@@ -204,7 +197,7 @@ def update_dashboard_data():
         "rsi": get_rsi('^N225')
     }
 
-    # 4. EMERGING MARKETS (ex China)
+    # 4. EM
     print("-> Lade EM (ex China)...")
     em_data = {
         "trend": get_trend_data('EMXC'),
@@ -215,21 +208,32 @@ def update_dashboard_data():
         "rsi": get_rsi('EMXC')
     }
 
-    # DATENOBJEKT ERSTELLEN
+    # 5. ROHSTOFFE (Überarbeitete Profi-Logik)
+    print("-> Lade Rohstoffe...")
+    commodities_data = {
+        "real_interest_rate": get_fred_data('DFII10', FRED_API_KEY), # 10J Realzins
+        "copper_gold_ratio": get_copper_gold_ratio_trend(),          # Konjunktur vs. Angst
+        "oil_trend": get_trend_data('CL=F'),                         # Öl-Trend
+        "inflation_breakeven_5y": get_fred_data('T5YIE', FRED_API_KEY), # 5J Inflation
+        "dxy_trend": get_trend_data('DX-Y.NYB'),                     # US-Dollar Trend
+        "macd": get_macd_signal('DBC'),                              # Rohstoff-Momentum
+        "rsi": get_rsi('DBC')                                        # Rohstoff-Sentiment
+    }
+
     dashboard_data = {
         "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "global_fear_greed": global_fg,
         "usa": usa_data,
         "eu": eu_data,
         "japan": jp_data,
-        "em": em_data
+        "em": em_data,
+        "commodities": commodities_data
     }
 
-    # DATEN IN JSON DATEI SPEICHERN
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(dashboard_data, f, indent=4)
         
-    print(f"Erfolgreich! Daten für alle 4 Regionen gespeichert in '{OUTPUT_FILE}'")
+    print(f"Erfolgreich! Daten gespeichert in '{OUTPUT_FILE}'")
 
 if __name__ == "__main__":
     update_dashboard_data()
