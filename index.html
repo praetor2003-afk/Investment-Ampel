@@ -17,26 +17,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        body {
-            font-family: 'Urbanist', sans-serif;
-            background-color: #0a0a0a;
-            color: #f5f5f5;
-        }
+        body { font-family: 'Urbanist', sans-serif; background-color: #0a0a0a; color: #f5f5f5; }
+        .score-circle { width: 140px; height: 140px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px solid #1a1a1a; transition: all 0.5s ease; }
         
-        .score-circle {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 4px solid #1a1a1a;
-            transition: all 0.5s ease;
-        }
-        .score-circle.green { background-color: #00e676; box-shadow: 0 0 50px rgba(0, 230, 118, 0.3); color: #0a0a0a; }
-        .score-circle.yellow { background-color: #ffcc00; box-shadow: 0 0 50px rgba(255, 204, 0, 0.3); color: #1a1a1a; }
-        .score-circle.red { background-color: #ff4d4d; box-shadow: 0 0 50px rgba(255, 77, 77, 0.3); color: #0a0a0a; }
+        /* Neue, erweiterte Farbskala für die runden Haupt-Ampeln */
+        .score-circle.dark-green { background-color: #00b300; box-shadow: 0 0 50px rgba(0, 179, 0, 0.4); color: #fff; }
+        .score-circle.light-green { background-color: #5cd65c; box-shadow: 0 0 40px rgba(92, 214, 92, 0.3); color: #0a0a0a; }
+        .score-circle.yellow { background-color: #ffcc00; box-shadow: 0 0 40px rgba(255, 204, 0, 0.3); color: #1a1a1a; }
+        .score-circle.orange { background-color: #ff9900; box-shadow: 0 0 40px rgba(255, 153, 0, 0.3); color: #0a0a0a; }
+        .score-circle.red { background-color: #ff4d4d; box-shadow: 0 0 50px rgba(255, 77, 77, 0.4); color: #0a0a0a; }
         .score-circle.gray { background-color: #333; color: #888; }
         
         .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; }
@@ -52,7 +41,6 @@
 
         // --- SCORING LOGIK (1 bis 10) ---
         const getTrendScore = (val) => val < -10 ? 10 : val < -5 ? 8 : val <= 5 ? 5 : val <= 10 ? 3 : 1;
-        
         const getMacdScore = (val) => {
             if (typeof val === 'number') return val; 
             const s = String(val).toLowerCase();
@@ -64,11 +52,9 @@
             if (s.includes("kreuzt") && s.includes("unten")) return 1;
             return 5; 
         };
-
         const getYieldCurveScore = (val) => val > 1.0 ? 10 : val > 0.5 ? 8 : val > 0.1 ? 6 : val > -0.1 ? 4 : 1;
         const getDxyScore = (val) => val < -5 ? 10 : val < -2 ? 8 : val <= 2 ? 5 : val <= 5 ? 3 : 1;
         const getVixScore = (val) => val > 35 ? 10 : val > 25 ? 8 : val > 18 ? 5 : val >= 13 ? 3 : 1;
-        
         const getCreditSpreadScore = (val) => {
             if (val > 8.0) return 10;
             if (val > 6.0) return 2; 
@@ -76,8 +62,6 @@
             if (val >= 3.5) return 6;
             return 8;                
         };
-        
-        // NEU: RSI Scoring (Antizyklisch: Überverkauft < 30 = Gut/Kaufchance)
         const getRsiScore = (val) => {
             if (val < 30) return 10;
             if (val < 45) return 8;
@@ -85,35 +69,64 @@
             if (val < 70) return 3;
             return 1;
         };
+        const getInflationScore = (val) => {
+            if (val > 2.5) return 10;
+            if (val > 2.2) return 8;
+            if (val >= 1.8) return 5;
+            if (val > 1.0) return 3;
+            return 1;
+        };
 
-        // Hilfsfunktionen für das Globale Fear & Greed Banner
+        // --- FARB-LOGIK FÜR DAS GLOBALE BANNER ---
         const getGlobalFgColor = (val) => {
-            if (val < 25) return 'bg-green-500 text-black shadow-[0_0_20px_rgba(34,197,94,0.4)]'; // Extreme Fear = Buy
-            if (val < 45) return 'bg-green-400 text-black';
-            if (val <= 55) return 'bg-yellow-500 text-black';
-            if (val < 75) return 'bg-red-400 text-black';
-            return 'bg-red-500 text-black shadow-[0_0_20px_rgba(239,68,68,0.4)]';
+            if (val < 25) return 'bg-[#00b300] text-white shadow-[0_0_20px_rgba(0,179,0,0.5)]'; // Starker Kauf
+            if (val < 45) return 'bg-[#5cd65c] text-black shadow-[0_0_15px_rgba(92,214,92,0.3)]'; // Kauf
+            if (val <= 55) return 'bg-[#ffcc00] text-black shadow-[0_0_15px_rgba(255,204,0,0.3)]'; // Neutral
+            if (val < 75) return 'bg-[#ff9900] text-black shadow-[0_0_15px_rgba(255,153,0,0.3)]'; // Warnung
+            return 'bg-[#ff4d4d] text-black shadow-[0_0_20px_rgba(255,77,77,0.5)]'; // Starker Verkauf
         };
         const getGlobalFgText = (val) => {
-            if (val < 25) return 'text-green-500';
-            if (val < 45) return 'text-green-400';
-            if (val <= 55) return 'text-yellow-500';
-            if (val < 75) return 'text-red-400';
-            return 'text-red-500';
+            if (val < 25) return 'text-[#00b300]';
+            if (val < 45) return 'text-[#5cd65c]';
+            if (val <= 55) return 'text-[#ffcc00]';
+            if (val < 75) return 'text-[#ff9900]';
+            return 'text-[#ff4d4d]';
         };
         const getGlobalFgLabel = (val) => {
-            if (val < 25) return 'Extreme Angst (Starkes Kaufsignal)';
-            if (val < 45) return 'Angst (Gutes Umfeld)';
+            if (val < 25) return 'Extreme Angst (Starker Kauf)';
+            if (val < 45) return 'Angst (Gutes Einstiegsumfeld)';
             if (val <= 55) return 'Neutral';
-            if (val < 75) return 'Gier (Gewinne sichern)';
-            return 'Extreme Gier (Gefahr / Verkaufssignal)';
+            if (val < 75) return 'Gier (Erhöhtes Risiko)';
+            return 'Extreme Gier (Warnsignal)';
         };
 
-        // --- FARB-HILFSFUNKTIONEN FÜR KACHELN ---
+        // --- NEUE 5-STUFIGE FARB-LOGIK FÜR DIE KACHELN ---
         const getTileColorClasses = (score) => {
-            if (score >= 7) return { border: 'border-t-4 border-t-green-500 border-[#2a2a2a]', iconBg: 'bg-green-500/20 text-green-400', badge: 'text-green-400 bg-green-400/10' };
-            if (score >= 4) return { border: 'border-t-4 border-t-yellow-500 border-[#2a2a2a]', iconBg: 'bg-yellow-500/20 text-yellow-400', badge: 'text-yellow-400 bg-yellow-400/10' };
-            return { border: 'border-t-4 border-t-red-500 border-[#2a2a2a]', iconBg: 'bg-red-500/20 text-red-500', badge: 'text-red-400 bg-red-400/10' };
+            if (score >= 9) return { 
+                border: 'border-t-4 border-t-[#00b300] border-[#2a2a2a]', 
+                iconBg: 'bg-[#00b300]/20 text-[#00b300]', 
+                badge: 'text-[#00b300] bg-[#00b300]/10' 
+            };
+            if (score >= 7) return { 
+                border: 'border-t-4 border-t-[#5cd65c] border-[#2a2a2a]', 
+                iconBg: 'bg-[#5cd65c]/20 text-[#5cd65c]', 
+                badge: 'text-[#5cd65c] bg-[#5cd65c]/10' 
+            };
+            if (score >= 5) return { 
+                border: 'border-t-4 border-t-[#ffcc00] border-[#2a2a2a]', 
+                iconBg: 'bg-[#ffcc00]/20 text-[#ffcc00]', 
+                badge: 'text-[#ffcc00] bg-[#ffcc00]/10' 
+            };
+            if (score >= 3) return { 
+                border: 'border-t-4 border-t-[#ff9900] border-[#2a2a2a]', 
+                iconBg: 'bg-[#ff9900]/20 text-[#ff9900]', 
+                badge: 'text-[#ff9900] bg-[#ff9900]/10' 
+            };
+            return { 
+                border: 'border-t-4 border-t-[#ff4d4d] border-[#2a2a2a]', 
+                iconBg: 'bg-[#ff4d4d]/20 text-[#ff4d4d]', 
+                badge: 'text-[#ff4d4d] bg-[#ff4d4d]/10' 
+            };
         };
 
         const getIndicatorConfig = (id, value, region) => {
@@ -124,43 +137,57 @@
             switch(id) {
                 case 'trend':
                     score = getTrendScore(value); icon = 'fa-chart-pie'; title = 'Bewertung (SMA)'; unit = '%';
-                    desc = 'Abstand zur 200-Tage-Linie. Antizyklisch: Weit darunter (günstig), weit darüber (überhitzt).';
+                    desc = 'Abstand zur 200-Tage-Linie. Antizyklisch bewertet.';
                     break;
                 case 'macd':
                     score = getMacdScore(value); icon = 'fa-arrow-trend-up'; title = 'Momentum (MACD)'; unit = '';
-                    desc = 'Trendstärke & Timing. Bewertet Kreuzungen und die Steigung der Trendwende.';
+                    desc = 'Trendstärke & Timing. Bewertet Kreuzungen und die Steigung.';
                     break;
                 case 'yield_curve':
                     score = getYieldCurveScore(value); icon = 'fa-chart-line'; title = 'Zinsstruktur'; unit = '%';
-                    desc = '10J minus 2J bzw. 3M Zinsen. Invers (< 0) warnt vor Abschwung.';
+                    desc = '10J minus 2J bzw. 3M. Invers (< 0) warnt vor Abschwung.';
                     break;
                 case 'dxy_trend':
                     score = getDxyScore(value); icon = 'fa-dollar-sign'; title = 'US-Dollar Trend'; unit = '%';
-                    desc = 'Abstand DXY zur 200-Tage-Linie. Schwacher Dollar entlastet Schwellenländer extrem.';
+                    desc = 'Ein schwacher Dollar beflügelt EM und Rohstoffe.';
                     break;
                 case 'vix':
                     score = getVixScore(value); icon = 'fa-bolt'; title = 'Volatilität'; unit = ' Pkt';
-                    desc = 'Angstbarometer (VIX). Antizyklisch: Extreme Panik (>35) = Kaufchance.';
+                    desc = 'Angstbarometer (VIX). Extreme Panik = Kaufchance.';
                     break;
                 case 'credit_spread':
                     score = getCreditSpreadScore(value); icon = 'fa-building-columns'; title = 'Credit Spread'; unit = '%';
-                    desc = 'Risikoaufschlag. U-Form: Niedrig = Gut, Hoch = Schlecht, Panik (>8%) = Kaufchance.';
+                    desc = 'U-Form: Niedrig = Gut, Hoch = Schlecht, Panik = Kaufchance.';
                     break;
                 case 'rsi':
                     score = getRsiScore(value); icon = 'fa-scale-balanced'; title = 'Sentiment (RSI)'; unit = ' Pkt';
-                    desc = 'Relative Strength Index. Antizyklisch: < 30 = Überverkauft, > 70 = Überkauft.';
+                    desc = 'Relative Stärke. < 30 = Überverkauft, > 70 = Überkauft.';
+                    break;
+                case 'gold_trend':
+                    score = getTrendScore(value); icon = 'fa-coins'; title = 'Gold (SMA 200)'; unit = '%';
+                    desc = 'Sicherer Hafen. Starker Trend zeigt fallende Realzinsen an.';
+                    break;
+                case 'copper_trend':
+                    score = getTrendScore(value); icon = 'fa-microchip'; title = 'Dr. Copper (SMA 200)'; unit = '%';
+                    desc = 'Konjunktur-Indikator. Kupfer hoch = wachsende Wirtschaft.';
+                    break;
+                case 'oil_trend':
+                    score = getTrendScore(value); icon = 'fa-oil-well'; title = 'WTI Öl (SMA 200)'; unit = '%';
+                    desc = 'Energie-Nachfrage. Treibt häufig die globale Inflation.';
+                    break;
+                case 'inflation_breakeven':
+                    score = getInflationScore(value); icon = 'fa-arrow-up-right-dots'; title = 'Inflationserwartung'; unit = '%';
+                    desc = 'Erwartete Inflation (10J). Gut für Rohstoffe.';
                     break;
                 default: return null;
             }
             return { id, title, value, score, icon, unit, desc };
         };
 
-        const RegionDashboard = ({ regionName, data, flagIcon }) => {
+        const RegionDashboard = ({ regionName, data, flagIcon, indicatorKeys }) => {
             if (!data) return null;
 
-            // 'rsi' wird für alle Regionen einheitlich abgefragt
-            const keys = ['trend', 'macd', 'yield_curve', 'dxy_trend', 'vix', 'credit_spread', 'rsi'];
-            const indicators = keys.map(k => getIndicatorConfig(k, data[k], regionName)).filter(Boolean);
+            const indicators = indicatorKeys.map(k => getIndicatorConfig(k, data[k], regionName)).filter(Boolean);
             
             let avgScore = 0;
             if (indicators.length > 0) {
@@ -168,14 +195,16 @@
             }
             const displayScore = avgScore.toFixed(1);
             
+            // NEUE LOGIK FÜR DIE HAUPT-AMPELN
             let overallLight = 'gray', label = 'KEINE DATEN';
-            if (avgScore >= 7) { overallLight = 'green'; label = 'BULLISCH'; }
-            else if (avgScore >= 4) { overallLight = 'yellow'; label = 'NEUTRAL'; }
+            if (avgScore >= 8.5) { overallLight = 'dark-green'; label = 'STARKER KAUF'; }
+            else if (avgScore >= 6.5) { overallLight = 'light-green'; label = 'KAUF'; }
+            else if (avgScore >= 4.5) { overallLight = 'yellow'; label = 'NEUTRAL'; }
+            else if (avgScore >= 2.5) { overallLight = 'orange'; label = 'ERHÖHTES RISIKO'; }
             else if (avgScore > 0) { overallLight = 'red'; label = 'BÄRISCH'; }
 
             return (
                 <div className="flex flex-col xl:flex-row gap-6 bg-[#0a0a0a] p-6 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden mb-6">
-                    {/* Ampel Bereich */}
                     <div className="flex flex-col justify-center items-center xl:items-start xl:w-1/4 xl:border-r border-white/10 xl:pr-6 shrink-0">
                         <div className="bg-[#323232] text-[#deff9a] px-4 py-1 rounded-full text-sm font-bold tracking-wider uppercase mb-6 flex items-center gap-2">
                             <i className={`fa-solid ${flagIcon}`}></i> {regionName}
@@ -186,11 +215,10 @@
                             <span className="text-xs font-bold tracking-widest mt-1 opacity-80">{label}</span>
                         </div>
                         <p className="text-gray-400 text-xs text-center xl:text-left mt-2">
-                            Score basiert auf {indicators.length} aktiven Makro-Indikatoren.
+                            Score basiert auf {indicators.length} Indikatoren.
                         </p>
                     </div>
 
-                    {/* Kacheln Bereich */}
                     <div className="xl:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-max">
                         {indicators.map(ind => {
                             const colors = getTileColorClasses(ind.score);
@@ -224,21 +252,29 @@
 
         const App = () => {
             const [dashboardData, setDashboardData] = useState(null);
-            const [isLoading, setIsLoading] = useState(true);
 
-            // NEU: Lädt die Daten beim Öffnen der Webseite automatisch!
             useEffect(() => {
                 fetch('dashboard_data.json')
-                    .then(response => response.json())
-                    .then(data => {
-                        setDashboardData(data);
-                        setIsLoading(false);
+                    .then(response => {
+                        if (!response.ok) throw new Error("JSON not found");
+                        return response.json();
                     })
-                    .catch(error => {
-                        console.log("Konnte Daten nicht automatisch laden.", error);
-                        setIsLoading(false);
-                    });
+                    .then(data => setDashboardData(data))
+                    .catch(err => console.log("Lokalmodus: Bitte lade die Datei manuell hoch."));
             }, []);
+
+            const handleFileUpload = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try { setDashboardData(JSON.parse(e.target.result)); } catch (err) { alert("Ungültige JSON"); }
+                };
+                reader.readAsText(file);
+            };
+
+            const standardKeys = ['trend', 'macd', 'yield_curve', 'dxy_trend', 'vix', 'credit_spread', 'rsi'];
+            const commodityKeys = ['gold_trend', 'copper_trend', 'oil_trend', 'inflation_breakeven', 'dxy_trend', 'macd', 'rsi'];
 
             return (
                 <div className="w-full">
@@ -247,26 +283,20 @@
                         <div>
                             <h1 className="text-3xl md:text-5xl font-bold mb-2">Global <span className="text-[#deff9a]">Macro</span><br/>Investment-Ampel</h1>
                         </div>
-                        <div className="text-gray-400 text-sm bg-[#141414] px-4 py-2 rounded-lg border border-[#2a2a2a]">
-                            <i className="fa-solid fa-robot mr-2 text-[#deff9a]"></i> Auto-Update aktiv
+                        <div className="file-upload-wrapper bg-[#2a2a2a] hover:bg-[#333] transition-colors text-white px-6 py-3 rounded-lg font-bold shadow-lg border border-gray-700 cursor-pointer">
+                            <i className="fa-solid fa-file-import mr-2"></i> Update laden
+                            <input type="file" accept=".json" onChange={handleFileUpload} />
                         </div>
                     </div>
 
-                    {isLoading && (
-                        <div className="text-center text-white py-20">
-                            <i className="fa-solid fa-circle-notch fa-spin text-4xl text-[#deff9a] mb-4"></i>
-                            <p>Lade globale Marktdaten...</p>
-                        </div>
-                    )}
-
-                    {!isLoading && !dashboardData && (
+                    {!dashboardData && (
                         <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-20 text-center flex flex-col items-center">
                             <i className="fa-solid fa-earth-americas text-6xl text-gray-700 mb-6"></i>
-                            <h3 className="text-2xl font-bold text-gray-400 mb-2">Warte auf erste Daten...</h3>
+                            <h3 className="text-2xl font-bold text-gray-400 mb-2">Bereit für globale Daten</h3>
                         </div>
                     )}
 
-                    {!isLoading && dashboardData && (
+                    {dashboardData && (
                         <div className="animate-fade-in space-y-4">
                             
                             {/* GLOBAL FEAR & GREED BANNER */}
@@ -292,10 +322,13 @@
                             </div>
                             
                             {/* Regionale Dashboards */}
-                            <RegionDashboard regionName="USA" data={dashboardData.usa} flagIcon="fa-flag-usa" />
-                            <RegionDashboard regionName="Europa" data={dashboardData.eu} flagIcon="fa-earth-europe" />
-                            <RegionDashboard regionName="Japan" data={dashboardData.japan} flagIcon="fa-torii-gate" />
-                            <RegionDashboard regionName="EM (ex China)" data={dashboardData.em} flagIcon="fa-globe" />
+                            <RegionDashboard regionName="USA" data={dashboardData.usa} flagIcon="fa-flag-usa" indicatorKeys={standardKeys} />
+                            <RegionDashboard regionName="Europa" data={dashboardData.eu} flagIcon="fa-earth-europe" indicatorKeys={standardKeys} />
+                            <RegionDashboard regionName="Japan" data={dashboardData.japan} flagIcon="fa-torii-gate" indicatorKeys={standardKeys} />
+                            <RegionDashboard regionName="EM (ex China)" data={dashboardData.em} flagIcon="fa-globe" indicatorKeys={standardKeys} />
+                            
+                            {/* Rohstoff Dashboard */}
+                            <RegionDashboard regionName="Rohstoffe (ex Agrar)" data={dashboardData.commodities} flagIcon="fa-gem" indicatorKeys={commodityKeys} />
                         </div>
                     )}
                 </div>
