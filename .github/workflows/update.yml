@@ -1,4 +1,21 @@
-name: Automatisches Daten-Updateon:schedule:- cron: '0 6 * * *'workflow_dispatch:permissions:contents: writejobs:update-data:runs-on: ubuntu-lateststeps:- name: Lade Repository herunteruses: actions/checkout@v4  - name: Richte Python ein
+name: Automatisches Daten-Update
+
+on:
+schedule:
+- cron: '0 6 * * *'
+workflow_dispatch:
+
+permissions:
+contents: write
+
+jobs:
+update-data:
+runs-on: ubuntu-latest
+steps:
+- name: Lade Repository herunter
+uses: actions/checkout@v4
+
+  - name: Richte Python ein
     uses: actions/setup-python@v5
     with:
       python-version: '3.10'
