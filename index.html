@@ -66,7 +66,7 @@
             return 1;
         };
         
-        // NEU: Makro-Rohstoff-Logik
+        // --- ROHSTOFF LOGIK ---
         const getRealYieldScore = (val) => {
             if (val < 0.5) return 10;
             if (val < 1.0) return 8;
@@ -136,7 +136,7 @@
                     break;
                 case 'vix':
                     score = getVixScore(value); icon = 'fa-bolt'; title = 'Volatilität'; unit = ' Pkt';
-                    desc = 'Angstbarometer (VIX). Antizyklisch: Extreme Panik (>35) = Kaufchance.';
+                    desc = 'Angstbarometer (VIX). Extreme Panik (>35) = Kaufchance.';
                     break;
                 case 'credit_spread':
                     score = getCreditSpreadScore(value); icon = 'fa-building-columns'; title = 'Credit Spread'; unit = '%';
@@ -146,15 +146,13 @@
                     score = getRsiScore(value); icon = 'fa-scale-balanced'; title = 'Sentiment (RSI)'; unit = ' Pkt';
                     desc = 'Relative Strength Index. Antizyklisch: < 30 = Überverkauft, > 70 = Überkauft.';
                     break;
-                
-                // NEU: Profi-Rohstoff-Indikatoren
                 case 'real_interest_rate':
                     score = getRealYieldScore(value); icon = 'fa-percent'; title = 'US Realzins (10J)'; unit = '%';
                     desc = 'Nominalzins minus Inflation. Hohe Realzinsen (> 2%) sind pures Gift für Gold & Rohstoffe.';
                     break;
                 case 'copper_gold_ratio':
                     score = getTrendScore(value); icon = 'fa-balance-scale-right'; title = 'Copper/Gold Ratio'; unit = '%';
-                    desc = 'Konjunktur (Kupfer) vs. Angst (Gold). Antizyklisch: Starker Absturz = Rezession eingepreist (Kaufchance).';
+                    desc = 'Konjunktur (Kupfer) vs. Angst (Gold). Starker Absturz = Rezession eingepreist (Kaufchance).';
                     break;
                 case 'oil_trend':
                     score = getTrendScore(value); icon = 'fa-oil-well'; title = 'WTI Öl (SMA 200)'; unit = '%';
@@ -236,15 +234,22 @@
 
         const App = () => {
             const [dashboardData, setDashboardData] = useState(null);
+            const [isLoading, setIsLoading] = useState(true);
 
             useEffect(() => {
-                fetch('dashboard_data.json')
+                fetch('dashboard_data.json?t=' + new Date().getTime()) // Anti-Cache Trick
                     .then(response => {
                         if (!response.ok) throw new Error("JSON not found");
                         return response.json();
                     })
-                    .then(data => setDashboardData(data))
-                    .catch(err => console.log("Lokalmodus: Bitte lade die Datei manuell hoch."));
+                    .then(data => {
+                        setDashboardData(data);
+                        setIsLoading(false);
+                    })
+                    .catch(error => {
+                        console.log("Konnte Daten nicht laden.", error);
+                        setIsLoading(false);
+                    });
             }, []);
 
             const handleFileUpload = (event) => {
@@ -258,7 +263,6 @@
             };
 
             const standardKeys = ['trend', 'macd', 'yield_curve', 'dxy_trend', 'vix', 'credit_spread', 'rsi'];
-            // NEUE Rohstoff-Keys passend zur Profi-Logik
             const commodityKeys = ['real_interest_rate', 'copper_gold_ratio', 'oil_trend', 'inflation_breakeven_5y', 'dxy_trend', 'macd', 'rsi'];
 
             return (
@@ -268,20 +272,33 @@
                         <div>
                             <h1 className="text-3xl md:text-5xl font-bold mb-2">Global <span className="text-[#deff9a]">Macro</span><br/>Investment-Ampel</h1>
                         </div>
-                        <div className="file-upload-wrapper bg-[#2a2a2a] hover:bg-[#333] transition-colors text-white px-6 py-3 rounded-lg font-bold shadow-lg border border-gray-700 cursor-pointer">
-                            <i className="fa-solid fa-file-import mr-2"></i> Update laden
-                            <input type="file" accept=".json" onChange={handleFileUpload} />
+                        <div className="flex gap-4">
+                            <div className="file-upload-wrapper bg-[#2a2a2a] hover:bg-[#333] transition-colors text-white px-4 py-2 rounded-lg font-bold shadow-lg border border-gray-700 cursor-pointer text-sm flex items-center">
+                                <i className="fa-solid fa-file-import mr-2"></i> Lokal laden
+                                <input type="file" accept=".json" onChange={handleFileUpload} />
+                            </div>
+                            <div className="text-gray-400 text-sm bg-[#141414] px-4 py-2 rounded-lg border border-[#2a2a2a] flex items-center">
+                                <i className="fa-solid fa-robot mr-2 text-[#deff9a]"></i> Auto-Update aktiv
+                            </div>
                         </div>
                     </div>
 
-                    {!dashboardData && (
-                        <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-20 text-center flex flex-col items-center">
-                            <i className="fa-solid fa-earth-americas text-6xl text-gray-700 mb-6"></i>
-                            <h3 className="text-2xl font-bold text-gray-400 mb-2">Bereit für globale Daten</h3>
+                    {isLoading && (
+                        <div className="text-center text-white py-20">
+                            <i className="fa-solid fa-circle-notch fa-spin text-4xl text-[#deff9a] mb-4"></i>
+                            <p>Lade globale Marktdaten...</p>
                         </div>
                     )}
 
-                    {dashboardData && (
+                    {!isLoading && !dashboardData && (
+                        <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-20 text-center flex flex-col items-center">
+                            <i className="fa-solid fa-earth-americas text-6xl text-gray-700 mb-6"></i>
+                            <h3 className="text-2xl font-bold text-gray-400 mb-2">Bereit für globale Daten</h3>
+                            <p className="text-gray-500">Lade die dashboard_data.json manuell hoch, falls das Auto-Update lokal geblockt wird.</p>
+                        </div>
+                    )}
+
+                    {!isLoading && dashboardData && (
                         <div className="animate-fade-in space-y-4">
                             
                             {/* GLOBAL FEAR & GREED BANNER */}
