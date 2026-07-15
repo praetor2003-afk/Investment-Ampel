@@ -230,10 +230,14 @@ def update_dashboard_data():
         "commodities": commodities_data
     }
 
-    # NEUER FILTER: Verwandelt 'NaN' (ungültige Zahlen) in 'None', 
-    # damit die Datei gültiges JSON bleibt und das Dashboard nicht abstürzt!
+    # NEUER FILTER: Verwandelt jede Art von 'NaN' (ungültige Zahlen) in 'None'
     def clean_nans(obj):
         if isinstance(obj, dict): return {k: clean_nans(v) for k, v in obj.items()}
+        try:
+            # Nutzt pandas, um auch fiese Sonder-NaNs absolut sicher zu finden
+            if pd.isna(obj): return None
+        except:
+            pass
         if isinstance(obj, float) and str(obj).lower() == 'nan': return None
         return obj
 
