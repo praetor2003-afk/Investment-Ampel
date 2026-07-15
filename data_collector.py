@@ -234,17 +234,25 @@ def update_dashboard_data():
     def clean_nans(obj):
         if isinstance(obj, dict): return {k: clean_nans(v) for k, v in obj.items()}
         try:
-            # Nutzt pandas, um auch fiese Sonder-NaNs absolut sicher zu finden
             if pd.isna(obj): return None
         except:
             pass
-        if isinstance(obj, float) and str(obj).lower() == 'nan': return None
+        # Der ultimative NaN-Killer: Ein NaN ist in Python niemals gleich sich selbst!
+        if isinstance(obj, float) and obj != obj: return None
+        if str(obj).lower() in ['nan', 'nat', '<na>']: return None
         return obj
 
     dashboard_data = clean_nans(dashboard_data)
 
+    # BEWEIS-AUSGABE: Wir drucken die Daten ins Logbuch, um sie zu überprüfen!
+    print("\n--- KONTROLL-AUSGABE FÜR GITHUB ACTIONS ---")
+    print(json.dumps(dashboard_data, indent=2, allow_nan=False))
+    print("--------------------------------------------\n")
+
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        json.dump(dashboard_data, f, indent=4)
+        # allow_nan=False sorgt dafür, dass das Skript sofort mit rotem X abstürzt,
+        # falls sich doch noch ein NaN versteckt, statt es heimlich zu speichern!
+        json.dump(dashboard_data, f, indent=4, allow_nan=False)
         
     print(f"Erfolgreich! Daten gespeichert in '{OUTPUT_FILE}'")
 
