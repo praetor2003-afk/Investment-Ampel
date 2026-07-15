@@ -230,6 +230,15 @@ def update_dashboard_data():
         "commodities": commodities_data
     }
 
+    # NEUER FILTER: Verwandelt 'NaN' (ungültige Zahlen) in 'None', 
+    # damit die Datei gültiges JSON bleibt und das Dashboard nicht abstürzt!
+    def clean_nans(obj):
+        if isinstance(obj, dict): return {k: clean_nans(v) for k, v in obj.items()}
+        if isinstance(obj, float) and str(obj).lower() == 'nan': return None
+        return obj
+
+    dashboard_data = clean_nans(dashboard_data)
+
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(dashboard_data, f, indent=4)
         
