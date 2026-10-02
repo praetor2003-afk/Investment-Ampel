@@ -1,45 +1,45 @@
 {
-    "last_updated": "2026-10-01 12:26:16",
-    "global_fear_greed": 31,
+    "last_updated": "2026-10-02 11:52:33",
+    "global_fear_greed": 27,
     "usa": {
-        "trend": 6.02,
-        "macd": "Kreuzt von oben nach unten",
-        "yield_curve": 0.41,
-        "vix": 16.3,
-        "credit_spread": 3.08,
-        "rsi": 48
-    },
-    "eu": {
-        "trend": 1.43,
+        "trend": 6.16,
         "macd": "F\u00e4llt stark",
-        "yield_curve": 1.19,
-        "vix": 9.0,
-        "credit_spread": 2.94,
-        "rsi": 37
-    },
-    "japan": {
-        "trend": 14.5,
-        "macd": "Steigt steil",
-        "yield_curve": 1.48,
-        "vix": 23.17,
-        "credit_spread": null,
-        "rsi": 66
-    },
-    "em": {
-        "trend": 11.26,
-        "macd": "F\u00e4llt stark",
-        "dxy_trend": 2.5,
-        "vix": 27.07,
-        "credit_spread": 1.47,
+        "yield_curve": 0.46,
+        "vix": 16.0,
+        "credit_spread": 3.12,
         "rsi": 50
     },
-    "commodities": {
-        "real_interest_rate": 2.91,
-        "copper_gold_ratio": 15.82,
-        "oil_trend": 11.49,
-        "inflation_breakeven_5y": 2.36,
-        "dxy_trend": 2.5,
+    "eu": {
+        "trend": 1.23,
         "macd": "F\u00e4llt stark",
-        "rsi": 52
+        "yield_curve": 1.19,
+        "vix": 9.7,
+        "credit_spread": 3.0,
+        "rsi": 39
+    },
+    "japan": {
+        "trend": 13.26,
+        "macd": "Steigt steil",
+        "yield_curve": 1.48,
+        "vix": 22.08,
+        "credit_spread": null,
+        "rsi": 62
+    },
+    "em": {
+        "trend": 11.36,
+        "macd": "F\u00e4llt stark",
+        "dxy_trend": 2.75,
+        "vix": 26.69,
+        "credit_spread": 1.51,
+        "rsi": 51
+    },
+    "commodities": {
+        "real_interest_rate": 2.93,
+        "copper_gold_ratio": 15.22,
+        "oil_trend": 8.53,
+        "inflation_breakeven_5y": 2.36,
+        "dxy_trend": 2.75,
+        "macd": "F\u00e4llt leicht",
+        "rsi": 57
     }
 }
