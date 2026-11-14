@@ -1,20 +1,20 @@
 {
-    "last_updated": "2026-11-13 13:55:13",
-    "global_fear_greed": 40,
+    "last_updated": "2026-11-14 12:57:42",
+    "global_fear_greed": 39,
     "usa": {
-        "trend": 3.48,
+        "trend": 3.02,
         "macd": "F\u00e4llt leicht",
-        "yield_curve": 0.24,
-        "vix": 17.73,
-        "credit_spread": 3.3,
-        "rsi": 48
+        "yield_curve": 0.27,
+        "vix": 19.3,
+        "credit_spread": 3.2,
+        "rsi": 47
     },
     "eu": {
         "trend": 5.41,
         "macd": "Steigt flach",
         "yield_curve": 1.19,
         "vix": 11.29,
-        "credit_spread": 3.21,
+        "credit_spread": 3.23,
         "rsi": 65
     },
     "japan": {
@@ -26,20 +26,20 @@
         "rsi": 43
     },
     "em": {
-        "trend": -2.61,
+        "trend": -2.99,
         "macd": "Steigt steil",
-        "dxy_trend": 3.32,
-        "vix": 31.25,
-        "credit_spread": 1.72,
-        "rsi": 45
+        "dxy_trend": 3.56,
+        "vix": 30.28,
+        "credit_spread": 1.67,
+        "rsi": 44
     },
     "commodities": {
-        "real_interest_rate": 2.78,
-        "copper_gold_ratio": 12.67,
-        "oil_trend": 1.22,
-        "inflation_breakeven_5y": 2.31,
-        "dxy_trend": 3.32,
+        "real_interest_rate": 2.86,
+        "copper_gold_ratio": 11.41,
+        "oil_trend": 0.89,
+        "inflation_breakeven_5y": 2.3,
+        "dxy_trend": 3.56,
         "macd": "F\u00e4llt leicht",
-        "rsi": 31
+        "rsi": 30
     }
 }
