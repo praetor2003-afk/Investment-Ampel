@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-11-14 12:57:42",
+    "last_updated": "2026-11-15 13:26:10",
     "global_fear_greed": 39,
     "usa": {
         "trend": 3.02,
@@ -35,7 +35,7 @@
     },
     "commodities": {
         "real_interest_rate": 2.86,
-        "copper_gold_ratio": 11.41,
+        "copper_gold_ratio": 11.61,
         "oil_trend": 0.89,
         "inflation_breakeven_5y": 2.3,
         "dxy_trend": 3.56,
