@@ -1,45 +1,45 @@
 {
-    "last_updated": "2026-11-17 15:29:22",
-    "global_fear_greed": 31,
+    "last_updated": "2026-11-18 15:05:53",
+    "global_fear_greed": 24,
     "usa": {
-        "trend": 0.54,
+        "trend": -0.08,
         "macd": "F\u00e4llt stark",
-        "yield_curve": 0.29,
-        "vix": 22.83,
-        "credit_spread": 3.23,
-        "rsi": 39
-    },
-    "eu": {
-        "trend": 3.75,
-        "macd": "Steigt flach",
-        "yield_curve": 1.19,
-        "vix": 11.99,
-        "credit_spread": 3.26,
-        "rsi": 54
-    },
-    "japan": {
-        "trend": -4.02,
-        "macd": "F\u00e4llt stark",
-        "yield_curve": 1.07,
-        "vix": 31.86,
-        "credit_spread": null,
-        "rsi": 39
-    },
-    "em": {
-        "trend": -7.78,
-        "macd": "Kreuzt von oben nach unten",
-        "dxy_trend": 3.68,
-        "vix": 37.38,
-        "credit_spread": 1.69,
+        "yield_curve": 0.3,
+        "vix": 26.26,
+        "credit_spread": 3.34,
         "rsi": 37
     },
+    "eu": {
+        "trend": 2.48,
+        "macd": "Kreuzt von oben nach unten",
+        "yield_curve": 1.19,
+        "vix": 12.36,
+        "credit_spread": 3.26,
+        "rsi": 47
+    },
+    "japan": {
+        "trend": -5.36,
+        "macd": "F\u00e4llt stark",
+        "yield_curve": 1.07,
+        "vix": 31.93,
+        "credit_spread": null,
+        "rsi": 36
+    },
+    "em": {
+        "trend": -7.99,
+        "macd": "F\u00e4llt stark",
+        "dxy_trend": 3.8,
+        "vix": 37.86,
+        "credit_spread": 1.74,
+        "rsi": 36
+    },
     "commodities": {
-        "real_interest_rate": 2.91,
-        "copper_gold_ratio": 10.35,
-        "oil_trend": -1.46,
-        "inflation_breakeven_5y": 2.25,
-        "dxy_trend": 3.68,
-        "macd": "F\u00e4llt leicht",
-        "rsi": 28
+        "real_interest_rate": 2.92,
+        "copper_gold_ratio": 6.81,
+        "oil_trend": -5.37,
+        "inflation_breakeven_5y": 2.26,
+        "dxy_trend": 3.8,
+        "macd": "F\u00e4llt stark",
+        "rsi": 23
     }
 }
